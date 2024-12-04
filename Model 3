@@ -8,7 +8,7 @@ v0_values = np.linspace(0, 3, 100)
 th_values = [0.125, 0.15, 0.175, 0.2, 0.225]  
 th_labels = [r"Bumper depth $=0.125m$", r"Bumper depth $=0.15m$", r"Bumper depth $=0.175m$",r"Bumper depth $=0.2m$", r"Bumper depth $=0.225m$"]
 
-# Acceleration function
+
 def r(th):
     return (0.395+th)
 
@@ -17,7 +17,7 @@ def compute_acceleration(y1, y2, th):
                - (1-(1/th)*y1)**-(1.65)) + 0.012*((1-(1/th)*y1)**(4) - (1-(1/th)*y1)**(-3.5)) 
                - 0.1*((1-(1/th)*y1)**(-3) - 1))/400
 
-# Initial condition
+
 m = 300
 v0 = 3
 t = 0
@@ -171,7 +171,6 @@ for th, label in zip(th_values, th_labels):
         
             if a <= 0:
                 acceleration_values.append(a)
-                
                 y1_new = y1 + h * y2
                 y2_new = y2 + h * a
                 
@@ -214,7 +213,6 @@ for th, label in zip(th_values, th_labels):
                 acceleration_values.append(a)
                 y1_new = y1 + h * y2
                 y2_new = y2 + h * a
-                
                 y1, y2 = y1_new, y2_new
                 t += h
                 
