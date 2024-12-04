@@ -1,0 +1,246 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parameters  
+h = 0.0003 
+n_steps = 1000
+v0_values = np.linspace(0, 3, 100) 
+th_values = [0.125, 0.15, 0.175, 0.2, 0.225]  
+th_labels = [r"Bumper depth $=0.125m$", r"Bumper depth $=0.15m$", r"Bumper depth $=0.175m$",r"Bumper depth $=0.2m$", r"Bumper depth $=0.225m$"]
+
+# Acceleration function
+def r(th):
+    return (0.395+th)
+
+def compute_acceleration(y1, y2, th):
+        return ((0.122*(th-0.006))/(th*0.134))*0.134*(2*np.sqrt(r(th)**2 - (r(th)-y1)**2))*98000*(6.3*((1-(1/th)*y1)**(0.3) 
+               - (1-(1/th)*y1)**-(1.65)) + 0.012*((1-(1/th)*y1)**(4) - (1-(1/th)*y1)**(-3.5)) 
+               - 0.1*((1-(1/th)*y1)**(-3) - 1))/400
+
+# Initial condition
+m = 300
+v0 = 3
+t = 0
+y1 = 0
+y2 = v0
+
+#%%
+
+plt.figure(figsize=(5, 3))
+plt.xlabel("$t$ (s)",fontsize=11)
+plt.ylabel("$x(t)$  $(m)$",fontsize=11)
+plt.legend()
+plt.grid(True)
+
+for th, label in zip(th_values, th_labels):
+    t_values=[0]
+    y1_values = [0]
+    y2_values = [v0]
+    acceleration_values = []
+    
+    for _ in range(n_steps):
+        a = compute_acceleration(y1, y2, th)
+        if a <= 0:
+            acceleration_values.append(a)
+            
+            y1_new = y1 + h * y2
+            y2_new = y2 + h * a
+            
+            y1, y2 = y1_new, y2_new
+            t += h
+            # store new acceleration
+            t_values.append(t)
+            y1_values.append(y1)
+            y2_values.append(y2)
+    
+    plt.plot(t_values, y1_values, label=label)
+    
+    t = 0
+    y1 = 0 
+    y2 = v0
+plt.legend(fontsize=6,loc=1)
+plt.xlim(0,0.1)
+plt.ylim(0,0.1)
+plt.savefig("Model 3 Displacement",dpi=500)
+
+#%%
+plt.figure(figsize=(7, 4))
+plt.xlabel("$t$ (s)",fontsize=11)
+plt.ylabel("$x'(t)$  $(m/s)$",fontsize=11)
+plt.legend()
+plt.grid(True)
+
+for th, label in zip(th_values, th_labels):
+    t_values=[0]
+    y1_values = [0]
+    y2_values = [v0]
+    acceleration_values = []
+    
+    for _ in range(n_steps):
+        a = compute_acceleration(y1, y2, th)
+        if a <= 0:
+            acceleration_values.append(a)
+            
+            y1_new = y1 + h * y2
+            y2_new = y2 + h * a
+            
+            y1, y2 = y1_new, y2_new
+            t += h
+            # store new acceleration
+            t_values.append(t)
+            y1_values.append(y1)
+            y2_values.append(y2)
+    
+    plt.plot(t_values, y2_values, label=label)
+    plt.legend()
+    
+    
+    t = 0
+    y1 = 0 
+    y2 = v0
+plt.legend(fontsize=9)
+plt.xlim(0,0.08)
+plt.ylim(-3.5,3.5)
+plt.savefig("Model 3 Velocity",dpi=500)
+
+#%%
+plt.figure(figsize=(7, 4))
+plt.xlabel("$t$ (s)",fontsize=11)
+plt.ylabel("$x''(t)$  $(m/s^2)$",fontsize=11)
+plt.legend()
+plt.grid(True)
+
+for th, label in zip(th_values, th_labels):
+    t_values=[0]
+    y1_values = [0]
+    y2_values = [v0]
+    acceleration_values = []
+    
+    for _ in range(n_steps):
+        a = compute_acceleration(y1, y2, th)
+        if a <= 0:
+            acceleration_values.append(a)
+            
+            y1_new = y1 + h * y2
+            y2_new = y2 + h * a
+            
+            y1, y2 = y1_new, y2_new
+            t += h
+            #store new acceleration
+            t_values.append(t)
+            y1_values.append(y1)
+            y2_values.append(y2)
+    
+    plt.plot(t_values[:-1], acceleration_values, label=label)
+    plt.legend()
+    
+    
+    t = 0
+    y1 = 0 
+    y2 = v0
+plt.legend(fontsize=9,loc=4)
+plt.xlim(0,0.08)
+plt.ylim(-250,10)
+plt.savefig("Model 3 Acceleration",dpi=500)
+
+#%%
+
+plt.figure(figsize=(7, 4))
+plt.xlabel("x'(0)  $(ms^{-1})$",fontsize=11)
+plt.ylabel("Maximum G-force $(ms^{-2})$",fontsize=11)
+plt.legend()
+plt.grid(True)
+
+amax_values = []
+
+for th, label in zip(th_values, th_labels):
+
+    t_values = [0]
+    y1_values = [0]
+    y2_values = [v0]
+    acceleration_values = []
+    
+
+    for v0 in v0_values:  
+        t = 0
+        y1 = 0
+        y2 = v0
+        
+        for _ in range(n_steps):
+            a = compute_acceleration(y1, y2, th)
+        
+            if a <= 0:
+                acceleration_values.append(a)
+                
+                y1_new = y1 + h * y2
+                y2_new = y2 + h * a
+                
+                y1, y2 = y1_new, y2_new
+                t += h
+                
+        if acceleration_values:
+            amax_values.append(-max(acceleration_values, key=abs)/9.8)
+        else:
+            amax_values.append(0) 
+      
+    plt.plot(v0_values, amax_values, label=label)
+
+    amax_values = []
+
+plt.axhline(y=15, color='blue', linestyle='--', label='Maximum G-force')
+plt.legend()
+plt.legend(fontsize=9)
+plt.xlim(0,3)
+plt.ylim(0,25)
+plt.savefig("Model 3 G-force",dpi=500)
+
+
+#%%
+plt.figure(figsize=(7, 4))
+
+for th, label in zip(th_values, th_labels):
+    der_values=[]
+    for v0 in v0_values:
+        t = 0
+        y1 = 0
+        y2 = v0
+        acceleration_values = []
+
+        for _ in range(n_steps):
+            a = compute_acceleration(y1, y2, th)
+            if isinstance(a, complex) or np.isnan(a):
+                break
+            if a<=0:
+                acceleration_values.append(a)
+                y1_new = y1 + h * y2
+                y2_new = y2 + h * a
+                
+                y1, y2 = y1_new, y2_new
+                t += h
+                
+        if len(acceleration_values) > 1:
+            g=9.8
+            g_f = np.array(acceleration_values)/g
+            der = [(g_f[i + 1] - g_f[i]) / h for i in range(len(g_f) - 1)]
+            der_values.append(max(der, default=0))  
+        else:
+           der_values.append(0)
+            
+    plt.plot(v0_values, der_values, label=label)
+
+plt.xlabel("$x'(0)$ (m/s)",fontsize=11)
+plt.ylabel("Maximum Rate of G-force Onset (G-force/s)",fontsize=11)
+plt.axhline(y=500, color='blue', linestyle='--', label='Maximum Onset Rate = 500 (G-force/s)')
+plt.legend()
+plt.grid(True)
+plt.legend(fontsize=9)
+plt.xlim(0,3)
+plt.ylim(0,1500)
+plt.savefig("Model 3 G-force rate",dpi=500)
+
+
+
+
+
+
+
