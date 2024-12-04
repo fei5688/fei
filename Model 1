@@ -1,0 +1,64 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+v = np.linspace(0,10,100)
+m1 = 250
+m2 = 400
+max_g = []
+for i in range(0,100):
+    max_g.append(15) 
+
+def x2(v,angle,m1,m2):
+    return (m1*v*np.cos(angle)-m2*v*np.cos(angle)+m1*(v*np.cos(angle)+v*np.cos(angle)))/(m1+m2)
+
+def x1(v,angle,m1,m2,x2):
+    return v*np.cos(angle)-(m2*v*np.cos(angle))/(m1) - (m2*x2)/(m1)
+
+def a1(x1,v,angle):
+    return (x1-v*np.cos(angle))/(0.1)
+
+def a_onecar(v,phi):
+    return (-2*v*np.cos(phi))/0.1
+
+def g_force(a1):
+    return a1/9.8
+
+plt.figure(figsize=(7,4))
+
+for angle in [0]:
+    plt.plot(v,-g_force(a1(x1(v,angle,m1,m2,x2(v,angle,m1,m2)),v,angle)),label="$α = β = 0^o$")
+for angle in [np.pi/4]:
+    plt.plot(v,-g_force(a1(x1(v,angle,m1,m2,x2(v,angle,m1,m2)),v,angle)),label="$α = β = 45^o$")
+for angle in [4*np.pi/9]:
+    plt.plot(v,-g_force(a1(x1(v,angle,m1,m2,x2(v,angle,m1,m2)),v,angle)),label="$α = β = 80^o$")
+
+plt.plot(v,max_g,label="Max g-force",c='r',linestyle="dashed")    
+plt.xlabel("$v$ $(ms^{-1})$")
+plt.ylabel("G $(ms^{-2})$")
+plt.xlim((0,10))
+plt.ylim((0,20))
+plt.legend()
+plt.grid()
+
+plt.savefig("Model 1 Results", dpi=500)
+
+#%%
+
+plt.figure(figsize=(7,4))
+
+for phi in [0]:
+    plt.plot(v,-a_onecar(v,phi)/9.8,label="$φ = 0^o$")
+for phi in [np.pi/4]:
+    plt.plot(v,-a_onecar(v,phi)/9.8,label="$φ = 45^o$")
+for phi in [4*np.pi/9]:
+    plt.plot(v,-a_onecar(v,phi)/9.8,label="$φ = 80^o$")
+
+plt.plot(v,max_g,label="Max g-force",c='r',linestyle="dashed")   
+plt.xlabel("$v$ $(ms^{-1})$")
+plt.ylabel("G $(ms^{-2})$")
+plt.xlim((0,10))
+plt.ylim((0,20))
+plt.legend()
+plt.grid()
+
+plt.savefig("Model 1 One Car Results", dpi=500)
