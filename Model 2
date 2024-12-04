@@ -1,0 +1,226 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+
+def model(y, t, m, c, k):
+    x, x_dot = y
+    x_double_dot = (-c * x_dot - k * x) / m
+    return [x_dot, x_double_dot]
+
+k_val = 433411.80  
+c_val = 744.68 
+
+#%%
+import numpy as np
+from scipy.integrate import odeint
+import matplotlib.pyplot as plt
+
+t_end = 0.5 
+n_steps = 1000
+t_vals = np.linspace(0, t_end, n_steps)
+
+m_values = [250, 275, 300, 325, 350, 375, 400]
+v_vals = np.linspace(0, 10, 100)
+
+def compute_max_acceleration_derivative(m_val, v_val, t_vals):
+    y0 = [0,v_val]
+    sol = odeint(model, y0, t_vals, args=(m_val, c_val, k_val))
+    x_vals = sol[:, 0]
+    x_dot_vals = sol[:, 1]
+    x_double_dot_vals = (-c_val * x_dot_vals - k_val * x_vals) / m_val
+    g = 9.8
+    g_f = x_double_dot_vals / g
+    der = np.diff(g_f) / np.diff(t_vals)
+    max_derivative = np.max(der)
+    return max_derivative
+
+
+results = {}
+
+for m_val in m_values:
+    v_list = []
+    max_derivative_list = []
+    for v_val in v_vals:
+        try:
+            max_derivative = compute_max_acceleration_derivative(m_val, v_val, t_vals)
+            v_list.append(v_val)
+            max_derivative_list.append(max_derivative)
+        except Exception as e:
+
+            continue
+    results[m_val] = (v_list, max_derivative_list)
+
+plt.figure(figsize=(10, 6))
+
+for m_val in m_values:
+    v_list, max_derivative_list = results[m_val]
+    plt.plot(v_list, max_derivative_list, label=f'm = {m_val} kg')
+
+
+plt.axhline(y=500, color='red', linestyle='--', label='Baseline = 500 G-force/s')
+
+plt.xlabel('Initial Velocity $v$ (m/s)',fontsize=20)
+plt.ylabel('G-force/s',fontsize=20)
+plt.title('Initial Velocity VS G-force/s for Different Masses',fontsize=18)
+plt.legend(fontsize=16)
+plt.tick_params(axis='both', labelsize=20)  
+
+plt.grid(True)
+plt.show()
+
+#%%
+import numpy as np
+from scipy.integrate import odeint
+import matplotlib
+import matplotlib.pyplot as plt
+
+
+matplotlib.rcParams['font.sans-serif'] = ['Arial']
+matplotlib.rcParams['axes.unicode_minus'] = False
+
+
+t_end = 0.5
+n_steps = 1000
+t_vals = np.linspace(0, t_end, n_steps)
+
+
+m_values = np.linspace(250, 400, 25)     
+v_values = np.linspace(0, 10, 100)   
+
+
+max_derivative_grid = np.empty((len(m_values), len(v_values)))
+
+def compute_max_acceleration_derivative(m_val, v_val, t_vals):
+    y0 = [0, v_val]
+    sol = odeint(model, y0, t_vals, args=(m_val, c_val, k_val))
+    x_vals = sol[:, 0]
+    x_dot_vals = sol[:, 1]
+    x_double_dot_vals = (-c_val * x_dot_vals - k_val * x_vals) / m_val
+    g = 9.8
+    g_f = x_double_dot_vals / g
+    der = np.diff(g_f) / np.diff(t_vals)
+    max_derivative = np.max(der)
+    return max_derivative
+
+for i, m_val in enumerate(m_values):
+    for j, v_val in enumerate(v_values):
+        try:
+            max_derivative = compute_max_acceleration_derivative(m_val, v_val, t_vals)
+            max_derivative_grid[i, j] = max_derivative
+        except Exception as e:
+            max_derivative_grid[i, j] = np.nan
+
+
+M, V = np.meshgrid(m_values, v_values)
+
+
+plt.figure(figsize=(10, 6))
+plt.contourf(M, V, max_derivative_grid.T, levels=100, cmap='viridis')
+plt.colorbar(label='G-force per second')
+plt.xlabel('Mass $m$ (kg)', fontsize=12)
+plt.ylabel('Initial Velocity $v$ (m/s)', fontsize=12)
+plt.title('Heatmap of Maximum Acceleration Derivative for $m$ and $v$', fontsize=14)
+plt.grid(True)
+plt.show()
+
+
+plt.figure(figsize=(10, 6))
+
+CS = plt.contour(M, V, max_derivative_grid.T, levels=20, cmap='viridis')
+plt.clabel(CS, inline=1, fontsize=10)
+plt.colorbar(label='G-force per second')
+
+CS2 = plt.contour(M, V0, max_derivative_grid.T, levels=[500], colors='red', linewidths=2)
+plt.clabel(CS2, fmt='500', colors='red', fontsize=20)
+
+plt.xlabel('Mass $m$ (kg)', fontsize=20)
+plt.ylabel('Initial Velocity $v$ (m/s)', fontsize=20)
+plt.title('Contour Plot of G-force/s with respect to v and m', fontsize=20)
+plt.grid(True)
+plt.show()
+
+#%%
+import numpy as np
+from scipy.integrate import odeint
+import matplotlib
+import matplotlib.pyplot as plt
+
+
+matplotlib.rcParams['font.sans-serif'] = ['Arial']
+matplotlib.rcParams['axes.unicode_minus'] = False
+
+t_end = 0.1
+n_steps = 1000
+t_vals = np.linspace(0, t_end, n_steps)
+
+m_values = [300]     
+v_values = [2, 2.5, 3, 3.5, 4]          
+
+for m_val in m_values:
+    plt.figure(figsize=(10, 6))
+
+    for v_val in v_values:
+
+        v = [0, v_val]
+
+        sol = odeint(model, v, t_vals, args=(m_val, c_val, k_val))
+        x_vals = sol[:, 0]  
+
+        plt.plot(t_vals, x_vals, label=f'$v$ = {v_val} m/s')
+
+    plt.xlabel('Time $t$ (s)', fontsize=20)
+    plt.ylabel('Position $x$ (m)', fontsize=20)
+    plt.title(f'Position vs. Time for Mass $m$ = {m_val} kg', fontsize=20)
+    plt.legend(fontsize=16, loc='lower left')
+    plt.tick_params(axis='both', labelsize=20) 
+
+    plt.grid(True)
+    plt.show()
+
+#%%
+import numpy as np
+from scipy.integrate import odeint
+import matplotlib.pyplot as plt
+
+  
+
+t_end = 0.1
+n_steps = 1000
+t_vals = np.linspace(0, t_end, n_steps)
+
+v = 3 
+
+m_values = [250, 275, 300,325,350,375,400]  
+
+plt.figure(figsize=(10, 6))
+
+for m_val in m_values:
+   
+    v0 = [0, v]
+    sol = odeint(model, v0, t_vals, args=(m_val, c_val, k_val))
+    x_vals = sol[:, 0]
+    plt.plot(t_vals, x_vals, label=f'm = {m_val} kg')
+plt.xlabel('Time $t$ (s)', fontsize=20)
+plt.ylabel('Position $x(t)$ (m)', fontsize=20)
+plt.title(f'Position vs. Time for Fixed Initial Velocity $v$ = {v} m/s', fontsize=20)
+plt.legend(fontsize=16, loc='lower left')
+plt.tick_params(axis='both', labelsize=20)  
+
+plt.grid(True)
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
